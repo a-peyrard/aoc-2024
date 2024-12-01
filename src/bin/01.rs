@@ -1,4 +1,4 @@
-use std::collections::BinaryHeap;
+use std::collections::{BinaryHeap, HashMap};
 use std::io::BufRead;
 
 advent_of_code::solution!(1);
@@ -41,8 +41,25 @@ fn find_numbers(s: &str) -> Option<(i32, i32)> {
     None
 }
 
-pub fn part_two(_input: &str) -> Option<u32> {
-    None
+pub fn part_two(input: &str) -> Option<u32> {
+    let numbers: Vec<_> = input
+        .as_bytes()
+        .lines()
+        .flatten()
+        .map(|s| find_numbers(&s))
+        .collect();
+
+    let mut second_list = HashMap::new();
+    for (_, y) in numbers.iter().flatten() {
+        *second_list.entry(y).or_insert(0) += 1;
+    }
+
+    let mut res: u32 = 0;
+    for (x, _) in numbers.iter().flatten() {
+        res += (*x * *second_list.entry(x).or_default()) as u32
+    }
+
+    Some(res)
 }
 
 #[cfg(test)]
@@ -58,6 +75,6 @@ mod tests {
     #[test]
     fn test_part_two() {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        assert_eq!(result, Some(31));
     }
 }
