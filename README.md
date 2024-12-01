@@ -17,6 +17,13 @@ _Template for the repository: http://github.com/fspoettel/advent-of-code-rust_
 <!--- advent_readme_stars table --->
 
 <!--- benchmarking table --->
+## Benchmarks
+
+| Day | Part 1 | Part 2 |
+| :---: | :---: | :---:  |
+| [Day 1](./src/bin/01.rs) | `98.2µs` | `109.9µs` |
+
+**Total: 0.21ms**
 <!--- benchmarking table --->
 
 ---
