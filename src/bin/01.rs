@@ -33,12 +33,11 @@ pub fn part_one(input: &str) -> Option<u32> {
 
 fn find_numbers(s: &str) -> Option<(i32, i32)> {
     let mut tokens = s.split_whitespace();
-    if let (Some(first), Some(second)) = (tokens.next(), tokens.next()) {
-        if let (Ok(num1), Ok(num2)) = (first.parse::<i32>(), second.parse::<i32>()) {
-            return Some((num1, num2));
-        }
-    }
-    None
+
+    Some((
+        tokens.next().and_then(|t| t.parse::<i32>().ok()).unwrap(),
+        tokens.next().and_then(|t| t.parse::<i32>().ok()).unwrap(),
+    ))
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
