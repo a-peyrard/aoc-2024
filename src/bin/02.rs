@@ -1,15 +1,11 @@
-use std::io::BufRead;
-
 advent_of_code::solution!(2);
 
 pub fn part_one(input: &str) -> Option<u32> {
     Some(
         input
-            .as_bytes()
             .lines()
-            .flatten()
-            .map(|s| to_numbers(&s))
-            .filter_map(|nums| is_safe(&nums))
+            .map(to_numbers)
+            .filter(|nums| is_safe(nums))
             .count() as u32,
     )
 }
@@ -20,41 +16,18 @@ fn to_numbers(line: &str) -> Vec<i32> {
         .collect()
 }
 
-fn is_safe(nums: &[i32]) -> Option<bool> {
-    let first = nums[0];
-    let second = nums[1];
-    let direction = if first >= second { -1 } else { 1 };
-    let distance = (first - second).abs();
-    if !(1..=3).contains(&distance) {
-        return None;
-    }
-
-    let mut latest = second;
-    for current in nums.iter().skip(2) {
-        let raw_distance = latest - current;
-        if direction >= 0 && raw_distance > 0 {
-            return None;
-        }
-        if direction < 0 && raw_distance < 0 {
-            return None;
-        }
-        let distance = raw_distance.abs();
-        if !(1..=3).contains(&distance) {
-            return None;
-        }
-        latest = *current;
-    }
-
-    Some(true)
+fn is_safe(nums: &[i32]) -> bool {
+    let direction = (nums[0] - nums[1]) >> 31;
+    nums.windows(2)
+        .map(|pair| pair[0] - pair[1])
+        .all(|distance| distance >> 31 == direction && (1..=3).contains(&distance.abs()))
 }
 
-fn is_safe_with_joker(nums: Vec<i32>) -> Option<bool> {
-    is_safe(&nums).or_else(|| {
-        (0..nums.len())
-            .map(|i| list_without_i_th(&nums, i))
-            .filter_map(|nums_wo_i_th| is_safe(&nums_wo_i_th))
-            .next()
-    })
+fn is_safe_with_joker(nums: &Vec<i32>) -> bool {
+    is_safe(nums)
+        || (0..nums.len())
+            .map(|i| list_without_i_th(nums, i))
+            .any(|nums_wo_i_th| is_safe(&nums_wo_i_th))
 }
 
 fn list_without_i_th(nums: &[i32], i: usize) -> Vec<i32> {
@@ -68,11 +41,9 @@ fn list_without_i_th(nums: &[i32], i: usize) -> Vec<i32> {
 pub fn part_two(input: &str) -> Option<u32> {
     Some(
         input
-            .as_bytes()
             .lines()
-            .flatten()
-            .map(|s| to_numbers(&s))
-            .filter_map(is_safe_with_joker)
+            .map(to_numbers)
+            .filter(is_safe_with_joker)
             .count() as u32,
     )
 }
@@ -105,10 +76,10 @@ mod tests {
         let nums = vec![1, 4, 5, 6];
 
         // WHEN
-        let res = is_safe_with_joker(nums);
+        let res = is_safe_with_joker(&nums);
 
         // THEN
-        assert_eq!(res, Some(true));
+        assert_eq!(res, true);
     }
 
     #[test]
@@ -117,10 +88,10 @@ mod tests {
         let nums = vec![9, 15, 8, 7, 6];
 
         // WHEN
-        let res = is_safe_with_joker(nums);
+        let res = is_safe_with_joker(&nums);
 
         // THEN
-        assert_eq!(res, Some(true));
+        assert_eq!(res, true);
     }
 
     #[test]
@@ -129,10 +100,10 @@ mod tests {
         let nums = vec![9, 15, 10, 11, 12];
 
         // WHEN
-        let res = is_safe_with_joker(nums);
+        let res = is_safe_with_joker(&nums);
 
         // THEN
-        assert_eq!(res, Some(true));
+        assert_eq!(res, true);
     }
 
     #[test]
@@ -141,10 +112,10 @@ mod tests {
         let nums = vec![9, 10, 11, 12, 13];
 
         // WHEN
-        let res = is_safe_with_joker(nums);
+        let res = is_safe_with_joker(&nums);
 
         // THEN
-        assert_eq!(res, Some(true));
+        assert_eq!(res, true);
     }
 
     #[test]
@@ -153,10 +124,10 @@ mod tests {
         let nums = vec![9, 10, 10, 10, 11];
 
         // WHEN
-        let res = is_safe_with_joker(nums);
+        let res = is_safe_with_joker(&nums);
 
         // THEN
-        assert_eq!(res, None);
+        assert_eq!(res, false);
     }
 
     #[test]
@@ -165,10 +136,10 @@ mod tests {
         let nums = vec![9, 10, 11, 12, 42];
 
         // WHEN
-        let res = is_safe_with_joker(nums);
+        let res = is_safe_with_joker(&nums);
 
         // THEN
-        assert_eq!(res, Some(true));
+        assert_eq!(res, true);
     }
 
     #[test]
@@ -177,10 +148,10 @@ mod tests {
         let nums = vec![1, 19, 9, 11, 12];
 
         // WHEN
-        let res = is_safe_with_joker(nums);
+        let res = is_safe_with_joker(&nums);
 
         // THEN
-        assert_eq!(res, None);
+        assert_eq!(res, false);
     }
 
     #[test]
@@ -189,9 +160,9 @@ mod tests {
         let nums = vec![59, 61, 57, 55, 54];
 
         // WHEN
-        let res = is_safe_with_joker(nums);
+        let res = is_safe_with_joker(&nums);
 
         // THEN
-        assert_eq!(res, Some(true));
+        assert_eq!(res, true);
     }
 }
