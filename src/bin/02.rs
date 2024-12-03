@@ -49,24 +49,20 @@ fn is_safe(nums: &[i32]) -> Option<bool> {
 }
 
 fn is_safe_with_joker(nums: Vec<i32>) -> Option<bool> {
-    let no_changes = is_safe(&nums);
-    if no_changes.is_some() {
-        return Some(true);
-    }
-    for i in 0..nums.len() {
-        let nums_wo_i_th = nums
-            .iter()
-            .enumerate()
-            .filter(|(j, _)| *j != i)
-            .map(|(_, v)| *v)
-            .collect::<Vec<i32>>();
-        let change_i_th = is_safe(&nums_wo_i_th);
-        if change_i_th.is_some() {
-            return Some(true);
-        }
-    }
+    is_safe(&nums).or_else(|| {
+        (0..nums.len())
+            .map(|i| list_without_i_th(&nums, i))
+            .filter_map(|nums_wo_i_th| is_safe(&nums_wo_i_th))
+            .next()
+    })
+}
 
-    None
+fn list_without_i_th(nums: &[i32], i: usize) -> Vec<i32> {
+    nums.iter()
+        .enumerate()
+        .filter(|(j, _)| *j != i)
+        .map(|(_, v)| *v)
+        .collect::<Vec<i32>>()
 }
 
 pub fn part_two(input: &str) -> Option<u32> {

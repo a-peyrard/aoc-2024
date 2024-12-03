@@ -21,9 +21,10 @@ _Template for the repository: http://github.com/fspoettel/advent-of-code-rust_
 
 | Day | Part 1 | Part 2 |
 | :---: | :---: | :---:  |
-| [Day 1](./src/bin/01.rs) | `98.2µs` | `109.9µs` |
+| [Day 1](./src/bin/01.rs) | `97.5µs` | `105.0µs` |
+| [Day 2](./src/bin/02.rs) | `138.4µs` | `237.0µs` |
 
-**Total: 0.21ms**
+**Total: 0.58ms**
 <!--- benchmarking table --->
 
 ---
