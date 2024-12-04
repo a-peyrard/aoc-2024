@@ -39,49 +39,32 @@ impl Grid {
         }
     }
 
-    fn count_xmas(&mut self) -> u32 {
-        self.print();
-
-        println!("------------");
-
+    fn count_xmas(&self) -> u32 {
         let mut found = 0;
-        let mut printable_character: u8 = 0;
         for j in 0..self.height {
             for i in 0..self.width {
                 if self.elems[j][i] == b'X' {
-                    let paint = 33 + printable_character;
-                    if self.find_from_start(i, j, paint) {
-                        self.elems[j][i] = paint;
-                        found += 1;
-                        printable_character += 1
+                    for direction in Direction::iter() {
+                        if self.is_word(direction, i, j, Vec::from("SAM")) {
+                            found += 1
+                        }
                     }
                 }
             }
         }
 
-        self.print();
-
         found
     }
 
-    fn find_from_start(&mut self, x: usize, y: usize, paint: u8) -> bool {
-        self.find_rec(x, y, Vec::from("SAM"), paint)
-    }
-
-    fn find_rec(&mut self, x: usize, y: usize, mut remaining_letters: Vec<u8>, paint: u8) -> bool {
-        if remaining_letters.is_empty() {
+    fn is_word(&self, direction: Direction, x: usize, y: usize, mut letters: Vec<u8>) -> bool {
+        if letters.is_empty() {
             return true;
         }
 
-        let current = remaining_letters.pop().unwrap();
-        for direction in Direction::iter() {
-            if let Some((nx, ny)) = self.get_coords(direction, x, y) {
-                if self.elems[ny][nx] == current {
-                    if self.find_rec(nx, ny, remaining_letters.clone(), paint) {
-                        self.elems[ny][nx] = paint;
-                        return true;
-                    }
-                }
+        let current = letters.pop().unwrap();
+        if let Some((nx, ny)) = self.get_coords(direction, x, y) {
+            if self.elems[ny][nx] == current {
+                return self.is_word(direction, nx, ny, letters);
             }
         }
 
@@ -149,7 +132,7 @@ impl Grid {
         }
     }
 
-    fn print(&self) {
+    fn _print(&self) {
         for j in 0..self.height {
             println!("{}", String::from_utf8(self.elems[j].clone()).unwrap());
         }
@@ -160,20 +143,6 @@ impl Grid {
 mod tests {
     use super::*;
 
-    /*
-        MMM#%&&&&M
-    M!##%%%M**     MMMSXXMASM
-    !M#!%%%'M*     MSAMXMSMSA
-    !S!%%%''M*     AMXSXMAAMM
-    !!A%%M'AMM     MSAMASMSMX
-    !""M&&XA((     XMASAMXAMM
-    S""##&&(&(     XXAMMXXAMA
-    "A##M$$&AA     SMSMSASXSS
-    M""M$&&MMM     SAXAMASAAA
-    M"M$A&&&&X     MAMMMXMMMM
-
-         */
-
     #[test]
     fn test_part_one_example() {
         let result = part_one(&advent_of_code::template::read_file("examples", DAY));
@@ -183,7 +152,7 @@ mod tests {
     #[test]
     fn test_part_one() {
         let result = part_one(&advent_of_code::template::read_file("inputs", DAY));
-        assert_eq!(result, Some(2968));
+        assert_eq!(result, Some(2571));
     }
 
     #[test]
@@ -203,7 +172,7 @@ mod tests {
     }
 
     #[test]
-    fn test_part_one_should_use_letters_only_once() {
+    fn test_part_one_should_reuse_letters_if_needed() {
         // GIVEN
         let input = r#"..X.
 ..M.
@@ -215,7 +184,7 @@ XMAS
         let result = part_one(input);
 
         // THEN
-        assert_eq!(result, Some(1));
+        assert_eq!(result, Some(2));
     }
 
     #[test]
@@ -223,8 +192,8 @@ XMAS
         // GIVEN
         let input = r#"S...
 .A..
-M...
-.X..
+..M.
+...X
 "#;
 
         // WHEN
