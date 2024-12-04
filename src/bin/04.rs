@@ -8,8 +8,8 @@ pub fn part_one(input: &str) -> Option<u32> {
     Some(Grid::new(input.as_bytes().lines().flatten().collect::<Vec<_>>()).count_xmas())
 }
 
-pub fn part_two(_input: &str) -> Option<u32> {
-    None
+pub fn part_two(input: &str) -> Option<u32> {
+    Some(Grid::new(input.as_bytes().lines().flatten().collect::<Vec<_>>()).count_ascii_xmas())
 }
 
 #[derive(EnumIter, Eq, Hash, PartialEq, Copy, Clone)]
@@ -65,6 +65,49 @@ impl Grid {
         if let Some((nx, ny)) = self.get_coords(direction, x, y) {
             if self.elems[ny][nx] == current {
                 return self.is_word(direction, nx, ny, letters);
+            }
+        }
+
+        false
+    }
+
+    fn count_ascii_xmas(&self) -> u32 {
+        let mut found = 0;
+        for j in 0..self.height {
+            for i in 0..self.width {
+                if self.elems[j][i] == b'A' && self.is_ascii_xmas(i, j) {
+                    found += 1;
+                }
+            }
+        }
+
+        found
+    }
+
+    fn is_ascii_xmas(&self, x: usize, y: usize) -> bool {
+        self.is_valid_diagonal(x, y, Direction::NorthWest, Direction::SouthEast)
+            && self.is_valid_diagonal(x, y, Direction::SouthWest, Direction::NorthEast)
+    }
+
+    fn is_valid_diagonal(
+        &self,
+        x: usize,
+        y: usize,
+        corner1: Direction,
+        corner2: Direction,
+    ) -> bool {
+        if let Some((first_x, first_y)) = self.get_coords(corner1, x, y) {
+            let reminder = match self.elems[first_y][first_x] {
+                b'M' => Some(b'S'),
+                b'S' => Some(b'M'),
+                _ => None,
+            };
+            if let Some(reminder) = reminder {
+                if let Some((second_x, second_y)) = self.get_coords(corner2, x, y) {
+                    if self.elems[second_y][second_x] == reminder {
+                        return true;
+                    }
+                }
             }
         }
 
@@ -145,7 +188,9 @@ mod tests {
 
     #[test]
     fn test_part_one_example() {
-        let result = part_one(&advent_of_code::template::read_file("examples", DAY));
+        let result = part_one(&advent_of_code::template::read_file_part(
+            "examples", DAY, 1,
+        ));
         assert_eq!(result, Some(18));
     }
 
@@ -204,8 +249,31 @@ XMAS
     }
 
     #[test]
+    fn test_part_two_should_find_xmas_ascii_art() {
+        // GIVEN
+        let input = r#"M.S
+.A.
+M.S
+"#;
+
+        // WHEN
+        let result = part_two(input);
+
+        // THEN
+        assert_eq!(result, Some(1));
+    }
+
+    #[test]
+    fn test_part_two_example() {
+        let result = part_two(&advent_of_code::template::read_file_part(
+            "examples", DAY, 2,
+        ));
+        assert_eq!(result, Some(9));
+    }
+
+    #[test]
     fn test_part_two() {
-        let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        let result = part_two(&advent_of_code::template::read_file("inputs", DAY));
+        assert_eq!(result, Some(1992));
     }
 }
