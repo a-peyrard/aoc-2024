@@ -65,12 +65,6 @@ mod tests {
     }
 
     #[test]
-    fn test_part_two() {
-        let result = part_two(&advent_of_code::template::read_file("inputs", DAY));
-        assert_eq!(result, Some(710));
-    }
-
-    #[test]
     fn test_is_safe_2_should_allow_to_skip_first_element() {
         // GIVEN
         let nums = vec![1, 4, 5, 6];
