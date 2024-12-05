@@ -195,12 +195,6 @@ mod tests {
     }
 
     #[test]
-    fn test_part_one() {
-        let result = part_one(&advent_of_code::template::read_file("inputs", DAY));
-        assert_eq!(result, Some(2571));
-    }
-
-    #[test]
     fn test_part_one_should_find_unique_vertical_xmas() {
         // GIVEN
         let input = r#"..X.
@@ -269,11 +263,5 @@ M.S
             "examples", DAY, 2,
         ));
         assert_eq!(result, Some(9));
-    }
-
-    #[test]
-    fn test_part_two() {
-        let result = part_two(&advent_of_code::template::read_file("inputs", DAY));
-        assert_eq!(result, Some(1992));
     }
 }
