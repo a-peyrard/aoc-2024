@@ -1,3 +1,4 @@
+use std::io::BufRead;
 use strum_macros::EnumIter;
 
 #[derive(EnumIter, Eq, Hash, PartialEq, Copy, Clone)]
@@ -12,6 +13,21 @@ pub enum Direction {
     NorthWest,
 }
 
+impl Direction {
+    pub fn rotate_right(&self) -> Direction {
+        match self {
+            Direction::North => Direction::East,
+            Direction::NorthEast => Direction::SouthEast,
+            Direction::East => Direction::South,
+            Direction::SouthEast => Direction::SouthWest,
+            Direction::South => Direction::West,
+            Direction::SouthWest => Direction::NorthWest,
+            Direction::West => Direction::North,
+            Direction::NorthWest => Direction::NorthEast,
+        }
+    }
+}
+
 pub struct Grid {
     pub width: usize,
     pub height: usize,
@@ -19,6 +35,10 @@ pub struct Grid {
 }
 
 impl Grid {
+    pub fn parse_input(input: &str) -> Self {
+        Self::new(input.as_bytes().lines().flatten().collect::<Vec<_>>())
+    }
+
     pub fn new(raw: Vec<String>) -> Self {
         Self {
             width: raw[0].len(),
