@@ -1,3 +1,5 @@
+use std::ops::Mul;
+
 advent_of_code::solution!(7);
 
 pub fn part_one(input: &str) -> Option<u64> {
@@ -16,7 +18,7 @@ pub fn part_two(input: &str) -> Option<u64> {
         vec![
             |a, b| a + b, //
             |a, b| a * b, //
-            |a, b| format!("{}{}", a, b).parse().unwrap(),
+            concat,
         ],
     ))
 }
@@ -75,6 +77,10 @@ impl Equation {
             None => current == self.result,
         }
     }
+}
+
+fn concat(a: u64, b: u64) -> u64 {
+    a.mul(10_u64.pow(b.ilog10() + 1)) + b
 }
 
 #[cfg(test)]
