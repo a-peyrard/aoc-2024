@@ -10,6 +10,17 @@ pub fn part_one(input: &str) -> Option<u64> {
     ))
 }
 
+pub fn part_two(input: &str) -> Option<u64> {
+    Some(part_generic(
+        input,
+        vec![
+            |a, b| a + b, //
+            |a, b| a * b, //
+            |a, b| format!("{}{}", a, b).parse().unwrap(),
+        ],
+    ))
+}
+
 fn part_generic(input: &str, operations: Vec<fn(u64, u64) -> u64>) -> u64 {
     input
         .lines()
@@ -66,10 +77,6 @@ impl Equation {
     }
 }
 
-pub fn part_two(_input: &str) -> Option<u32> {
-    None
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -92,6 +99,6 @@ mod tests {
     #[test]
     fn test_part_two() {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        assert_eq!(result, Some(11387));
     }
 }
