@@ -1,14 +1,22 @@
 advent_of_code::solution!(7);
 
 pub fn part_one(input: &str) -> Option<u64> {
-    Some(
-        input
-            .lines()
-            .map(Equation::parse)
-            .filter(|eq| eq.solve())
-            .map(|eq| eq.result)
-            .sum(),
-    )
+    Some(part_generic(
+        input,
+        vec![
+            |a, b| a + b, //
+            |a, b| a * b, //
+        ],
+    ))
+}
+
+fn part_generic(input: &str, operations: Vec<fn(u64, u64) -> u64>) -> u64 {
+    input
+        .lines()
+        .map(Equation::parse)
+        .filter(|eq| eq.solve(&operations))
+        .map(|eq| eq.result)
+        .sum()
 }
 
 struct Equation {
@@ -30,16 +38,28 @@ impl Equation {
         Self { result, components }
     }
 
-    fn solve(&self) -> bool {
-        self.solve_rec(*self.components.first().unwrap(), &self.components, 1)
+    fn solve(&self, operations: &Vec<fn(u64, u64) -> u64>) -> bool {
+        self.solve_rec(
+            operations,
+            *self.components.first().unwrap(),
+            &self.components,
+            1,
+        )
     }
 
-    fn solve_rec(&self, current: u64, components: &Vec<u64>, index: usize) -> bool {
+    fn solve_rec(
+        &self,
+        operations: &Vec<fn(u64, u64) -> u64>,
+        current: u64,
+        components: &Vec<u64>,
+        index: usize,
+    ) -> bool {
         match components.get(index) {
             Some(component) => {
                 current <= self.result
-                    && (self.solve_rec(current + component, components, index + 1)
-                        || self.solve_rec(current * component, components, index + 1))
+                    && operations.iter().any(|op| {
+                        self.solve_rec(operations, op(current, *component), components, index + 1)
+                    })
             }
             None => current == self.result,
         }
