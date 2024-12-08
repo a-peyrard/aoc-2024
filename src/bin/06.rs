@@ -6,20 +6,49 @@ use std::{thread, time::Duration};
 advent_of_code::solution!(6);
 
 const ANIMATE: bool = false;
+const SPEED: u64 = 100;
+
+type Guard = (usize, usize, Direction);
+
+trait GuardExt {
+    fn only_coord(&self) -> (usize, usize);
+}
+
+impl GuardExt for Guard {
+    fn only_coord(&self) -> (usize, usize) {
+        (self.0, self.1)
+    }
+}
 
 pub fn part_one(input: &str) -> Option<u32> {
-    let mut grid = Grid::parse_input(input);
+    let grid = Grid::parse_input(input);
 
     let guard = find_guard(&grid);
     if ANIMATE {
-        grid.elems[guard.1][guard.0] = b'.'; // clear guard for animation
+        // print initial grid, and clear the cursor as we won't be displaying it
+        print_state(&grid, Some(guard));
+        print!("\x1B[?25l");
     }
 
-    let visited_positions = do_shift(guard, &grid)
-        .inspect(|guard| display(*guard, &grid))
-        .map(|(x, y, _)| (x, y))
-        .collect::<HashSet<(usize, usize)>>()
-        .len();
+    let mut visited = HashSet::<(usize, usize)>::new();
+    visited.insert(guard.only_coord());
+
+    let mut latest: Option<Guard> = None;
+    for current in do_shift(guard, &grid) {
+        if ANIMATE {
+            display(current, latest);
+        }
+        visited.insert(current.only_coord());
+        latest = Some(current);
+    }
+    let visited_positions = visited.len();
+
+    if ANIMATE {
+        print!("\x1B[?25h");
+        std::io::stdout().flush().unwrap();
+    }
+
+    // display_visited(&visited, latest, &grid);
 
     Some(visited_positions as u32)
 }
@@ -32,7 +61,7 @@ struct GuardIterator<'a> {
 }
 
 impl<'a> Iterator for GuardIterator<'a> {
-    type Item = (usize, usize, Direction);
+    type Item = Guard;
 
     fn next(&mut self) -> Option<Self::Item> {
         self.try_to_advance(self.direction)
@@ -63,7 +92,7 @@ impl<'a> GuardIterator<'a> {
     }
 }
 
-fn do_shift((x, y, direction): (usize, usize, Direction), grid: &Grid) -> GuardIterator {
+fn do_shift((x, y, direction): Guard, grid: &Grid) -> GuardIterator {
     GuardIterator {
         grid,
         x,
@@ -72,7 +101,7 @@ fn do_shift((x, y, direction): (usize, usize, Direction), grid: &Grid) -> GuardI
     }
 }
 
-fn find_guard(grid: &Grid) -> (usize, usize, Direction) {
+fn find_guard(grid: &Grid) -> Guard {
     for j in 0..grid.height {
         for i in 0..grid.width {
             if grid.elems[j][i] == b'^' {
@@ -97,14 +126,14 @@ pub fn part_two(_input: &str) -> Option<u32> {
     None
 }
 
-pub fn print_state(grid: &Grid, guard: Option<(usize, usize, u8)>) {
+pub fn print_state(grid: &Grid, guard: Option<Guard>) {
     print!("\x1B[2J\x1B[H");
 
     for j in 0..grid.height {
         for i in 0..grid.width {
-            if let Some((gx, gy, g)) = guard {
+            if let Some((gx, gy, direction)) = guard {
                 if i == gx && j == gy {
-                    print!("\x1B[1;31m{}\x1B[0m", g as char);
+                    print!("\x1B[1;31m{}\x1B[0m", to_char(direction) as char);
                     continue;
                 }
             }
@@ -115,11 +144,25 @@ pub fn print_state(grid: &Grid, guard: Option<(usize, usize, u8)>) {
     std::io::stdout().flush().unwrap();
 }
 
-fn display((x, y, direction): (usize, usize, Direction), grid: &Grid) {
-    if ANIMATE {
-        print_state(grid, Some((x, y, to_char(direction))));
-        thread::sleep(Duration::from_millis(200));
+fn update_guard_position((x, y, direction): Guard, prev_position: Option<Guard>) {
+    if let Some((px, py, _)) = prev_position {
+        print!("\x1B[{};{}H\x1B[1;31m+\x1B[0m", py + 1, px + 1);
     }
+
+    print!(
+        "\x1B[{};{}H\x1B[1;33m{}\x1B[0m",
+        y + 1,
+        x + 1,
+        to_char(direction) as char
+    );
+
+    // Flush stdout to ensure immediate updates
+    std::io::stdout().flush().unwrap();
+}
+
+fn display(current: Guard, previous: Option<Guard>) {
+    update_guard_position(current, previous);
+    thread::sleep(Duration::from_millis(SPEED));
 }
 
 pub fn to_char(direction: Direction) -> u8 {
@@ -137,7 +180,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_part_one() {
+    fn test_part_one_example() {
         let result = part_one(&advent_of_code::template::read_file("examples", DAY));
         assert_eq!(result, Some(41));
     }
@@ -160,9 +203,20 @@ mod tests {
     }
 
     #[test]
-    fn test_part_one_inputs() {
-        let result = part_one(&advent_of_code::template::read_file("inputs", DAY));
-        assert_eq!(result, Some(5330)); // too low
+    fn test_part_one_should_count_initial_position() {
+        // GIVEN
+        let input = r#">....
+...##
+.....
+.....
+.....
+"#;
+
+        // WHEN
+        let result = part_one(input);
+
+        // THEN
+        assert_eq!(result, Some(5));
     }
 
     #[test]
