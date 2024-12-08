@@ -53,6 +53,44 @@ pub fn part_one(input: &str) -> Option<u32> {
     Some(visited_positions as u32)
 }
 
+pub fn part_two(input: &str) -> Option<u32> {
+    let mut grid = Grid::parse_input(input);
+
+    let guard = find_guard(&grid);
+
+    // all visited will be candidate to put a new obstacle, all but the current guard position,
+    // so this time we will not store it.
+    let visited = do_shift(guard, &grid)
+        .map(|g| g.only_coord())
+        .collect::<HashSet<(usize, usize)>>();
+
+    // now we need to try to put an obstacle in each of those positions
+    // and see which of them create a cycle...
+    let mut possible_cycles: u32 = 0;
+    for (x, y) in visited {
+        grid.elems[y][x] = b'#';
+        if has_cycle(&grid, guard) {
+            possible_cycles += 1;
+        }
+        grid.elems[y][x] = b'.';
+    }
+
+    Some(possible_cycles)
+}
+
+fn has_cycle(grid: &Grid, guard: Guard) -> bool {
+    // this time the visited needs to contain the coord and the direction to
+    // know if we are creating a cycle or not
+    let mut visited = HashSet::new();
+    for current in do_shift(guard, grid) {
+        if !visited.insert(current) {
+            return true;
+        }
+    }
+
+    false
+}
+
 struct GuardIterator<'a> {
     grid: &'a Grid,
     x: usize,
@@ -120,10 +158,6 @@ fn find_guard(grid: &Grid) -> Guard {
     }
 
     panic!("Unable to find the guard 😱");
-}
-
-pub fn part_two(_input: &str) -> Option<u32> {
-    None
 }
 
 pub fn print_state(grid: &Grid, guard: Option<Guard>) {
@@ -220,8 +254,8 @@ mod tests {
     }
 
     #[test]
-    fn test_part_two() {
+    fn test_part_two_example() {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        assert_eq!(result, Some(6));
     }
 }
