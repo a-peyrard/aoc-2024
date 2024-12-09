@@ -27,15 +27,16 @@ _Template for the repository: http://github.com/fspoettel/advent-of-code-rust_
 
 | Day | Part 1 | Part 2 |
 | :---: | :---: | :---:  |
-| [Day 1](./src/bin/01.rs) | `92.8µs` | `115.7µs` |
-| [Day 2](./src/bin/02.rs) | `120.7µs` | `218.6µs` |
-| [Day 3](./src/bin/03.rs) | `252.7µs` | `304.5µs` |
-| [Day 4](./src/bin/04.rs) | `945.7µs` | `115.6µs` |
-| [Day 5](./src/bin/05.rs) | `750.8µs` | `1.9ms` |
-| [Day 6](./src/bin/06.rs) | `308.2µs` | `1.0s` |
-| [Day 7](./src/bin/07.rs) | `1.4ms` | `28.1ms` |
+| [Day 1](./src/bin/01.rs) | `94.5µs` | `108.7µs` |
+| [Day 2](./src/bin/02.rs) | `119.5µs` | `230.3µs` |
+| [Day 3](./src/bin/03.rs) | `262.8µs` | `324.8µs` |
+| [Day 4](./src/bin/04.rs) | `986.7µs` | `128.9µs` |
+| [Day 5](./src/bin/05.rs) | `815.6µs` | `2.0ms` |
+| [Day 6](./src/bin/06.rs) | `330.7µs` | `1.1s` |
+| [Day 7](./src/bin/07.rs) | `1.5ms` | `29.0ms` |
+| [Day 8](./src/bin/08.rs) | `26.0µs` | `-` |
 
-**Total: 1034.63ms**
+**Total: 1135.93ms**
 <!--- benchmarking table --->
 
 ---
