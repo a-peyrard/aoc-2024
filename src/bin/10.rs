@@ -13,6 +13,16 @@ pub fn part_one(input: &str) -> Option<u32> {
     )
 }
 
+pub fn part_two(input: &str) -> Option<u32> {
+    let grid = Grid::parse_input(input);
+
+    Some(
+        grid.find(b'0')
+            .map(|coords| find_trails2(coords, &grid))
+            .sum(),
+    )
+}
+
 const DIRECTIONS: &[Direction] = &[
     Direction::North,
     Direction::South,
@@ -25,6 +35,10 @@ fn find_trails(start: (usize, usize), grid: &Grid) -> u32 {
         .into_iter()
         .collect::<HashSet<(usize, usize)>>()
         .len() as u32
+}
+
+fn find_trails2(start: (usize, usize), grid: &Grid) -> u32 {
+    find_trails_rec(start, 0, grid).len() as u32
 }
 
 fn find_trails_rec((x, y): (usize, usize), number: u32, grid: &Grid) -> Vec<(usize, usize)> {
@@ -42,10 +56,6 @@ fn find_trails_rec((x, y): (usize, usize), number: u32, grid: &Grid) -> Vec<(usi
     }
 
     result
-}
-
-pub fn part_two(_input: &str) -> Option<u32> {
-    None
 }
 
 #[cfg(test)]
@@ -93,10 +103,34 @@ mod tests {
     }
 
     #[test]
-    fn test_part_two() {
+    fn test_part_two_example_6() {
+        let result = part_two(&advent_of_code::template::read_file_part(
+            "examples", DAY, 6,
+        ));
+        assert_eq!(result, Some(3));
+    }
+
+    #[test]
+    fn test_part_two_example_7() {
+        let result = part_two(&advent_of_code::template::read_file_part(
+            "examples", DAY, 7,
+        ));
+        assert_eq!(result, Some(13));
+    }
+
+    #[test]
+    fn test_part_two_example_8() {
+        let result = part_two(&advent_of_code::template::read_file_part(
+            "examples", DAY, 8,
+        ));
+        assert_eq!(result, Some(227));
+    }
+
+    #[test]
+    fn test_part_two_example_5() {
         let result = part_two(&advent_of_code::template::read_file_part(
             "examples", DAY, 5,
         ));
-        assert_eq!(result, None);
+        assert_eq!(result, Some(81));
     }
 }
