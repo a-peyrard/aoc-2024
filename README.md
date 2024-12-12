@@ -23,6 +23,7 @@ _Template for the repository: http://github.com/fspoettel/advent-of-code-rust_
 | [Day 8](https://adventofcode.com/2024/day/8) | ⭐ | ⭐ |
 | [Day 9](https://adventofcode.com/2024/day/9) | ⭐ | ⭐ |
 | [Day 10](https://adventofcode.com/2024/day/10) | ⭐ | ⭐ |
+| [Day 11](https://adventofcode.com/2024/day/11) | ⭐ | ⭐ |
 <!--- advent_readme_stars table --->
 
 <!--- benchmarking table --->
@@ -30,18 +31,19 @@ _Template for the repository: http://github.com/fspoettel/advent-of-code-rust_
 
 | Day | Part 1 | Part 2 |
 | :---: | :---: | :---:  |
-| [Day 1](./src/bin/01.rs) | `96.9µs` | `118.3µs` |
-| [Day 2](./src/bin/02.rs) | `122.1µs` | `243.2µs` |
-| [Day 3](./src/bin/03.rs) | `243.7µs` | `298.2µs` |
-| [Day 4](./src/bin/04.rs) | `890.6µs` | `108.1µs` |
-| [Day 5](./src/bin/05.rs) | `818.4µs` | `1.9ms` |
-| [Day 6](./src/bin/06.rs) | `327.0µs` | `1.1s` |
-| [Day 7](./src/bin/07.rs) | `1.6ms` | `29.6ms` |
-| [Day 8](./src/bin/08.rs) | `26.1µs` | `67.5µs` |
-| [Day 9](./src/bin/09.rs) | `168.3µs` | `37.1ms` |
-| [Day 10](./src/bin/10.rs) | `396.2µs` | `339.3µs` |
+| [Day 1](./src/bin/01.rs) | `95.5µs` | `110.9µs` |
+| [Day 2](./src/bin/02.rs) | `120.8µs` | `222.2µs` |
+| [Day 3](./src/bin/03.rs) | `241.4µs` | `291.9µs` |
+| [Day 4](./src/bin/04.rs) | `897.8µs` | `117.5µs` |
+| [Day 5](./src/bin/05.rs) | `769.8µs` | `1.9ms` |
+| [Day 6](./src/bin/06.rs) | `329.1µs` | `1.1s` |
+| [Day 7](./src/bin/07.rs) | `1.5ms` | `29.3ms` |
+| [Day 8](./src/bin/08.rs) | `25.6µs` | `67.5µs` |
+| [Day 9](./src/bin/09.rs) | `171.9µs` | `36.1ms` |
+| [Day 10](./src/bin/10.rs) | `398.4µs` | `344.4µs` |
+| [Day 11](./src/bin/11.rs) | `260.5µs` | `13.8ms` |
 
-**Total: 1174.46ms**
+**Total: 1187.07ms**
 <!--- benchmarking table --->
 
 ---
