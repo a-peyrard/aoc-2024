@@ -55,6 +55,7 @@ impl<'a> Iterator for ElementIterator<'a> {
     }
 }
 
+#[derive(Clone, Debug)]
 pub struct Grid {
     pub width: usize,
     pub height: usize,
