@@ -2,47 +2,54 @@ use regex::Regex;
 
 advent_of_code::solution!(13);
 
-pub fn part_one(input: &str) -> Option<u32> {
+pub fn part_one(input: &str) -> Option<u64> {
+    part_gen(input, 0)
+}
+
+pub fn part_two(input: &str) -> Option<u64> {
+    part_gen(input, 10_000_000_000_000)
+}
+
+fn part_gen(input: &str, increment: i64) -> Option<u64> {
     let (num_a, num_b) = input
         .split("\n\n")
-        .map(Machine::parse)
+        .map(|block| Machine::parse(block, increment))
         .filter_map(|m| m.solve())
         .fold(
             (0, 0), //
             |(acc_a, acc_b), (cur_a, cur_b)| (acc_a + cur_a, acc_b + cur_b),
         );
 
-    Some(num_a as u32 * 3 + num_b as u32)
-}
-
-pub fn part_two(_input: &str) -> Option<u32> {
-    None
+    Some(num_a as u64 * 3 + num_b as u64)
 }
 
 struct Machine {
-    prize: (i32, i32),
-    a: (i32, i32),
-    b: (i32, i32),
+    prize: (i64, i64),
+    a: (i64, i64),
+    b: (i64, i64),
 }
 
 impl Machine {
-    fn parse(input: &str) -> Self {
+    fn parse(input: &str, increment: i64) -> Self {
         let mut tokens = input.split('\n');
         let a = Machine::parse_line(tokens.next().unwrap());
         let b = Machine::parse_line(tokens.next().unwrap());
-        let prize = Machine::parse_line(tokens.next().unwrap());
+        let mut prize = Machine::parse_line(tokens.next().unwrap());
+        if increment > 0 {
+            prize = (prize.0 + increment, prize.1 + increment);
+        }
 
         Self { prize, a, b }
     }
 
-    fn parse_line(line: &str) -> (i32, i32) {
+    fn parse_line(line: &str) -> (i64, i64) {
         let line_regex = Regex::new(r".*: X[+=](\d+), Y[+=](\d+)").unwrap();
         let caps = line_regex.captures(line).unwrap();
 
         (caps[1].parse().unwrap(), caps[2].parse().unwrap())
     }
 
-    fn solve(&self) -> Option<(i32, i32)> {
+    fn solve(&self) -> Option<(i64, i64)> {
         let (x, y) = self.prize;
         let (xa, ya) = self.a;
         let (xb, yb) = self.b;
@@ -57,7 +64,7 @@ impl Machine {
     }
 }
 
-fn divide_int(a: i32, b: i32) -> Option<i32> {
+fn divide_int(a: i64, b: i64) -> Option<i64> {
     if b == 0 || a % b != 0 {
         None
     } else {
@@ -111,6 +118,6 @@ Prize: X=7870, Y=6450
     #[test]
     fn test_part_two() {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        assert_eq!(result, Some(875318608908));
     }
 }
