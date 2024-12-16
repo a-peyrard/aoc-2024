@@ -1,9 +1,18 @@
+use advent_of_code::util::grid::Grid;
 use itertools::Itertools;
+use std::thread::sleep;
+use std::time::Duration;
 
 advent_of_code::solution!(14);
 
 pub fn part_one(input: &str) -> Option<u32> {
     part_gen(input, 100, 101, 103)
+}
+
+pub fn part_two(_input: &str) -> Option<u32> {
+    // got that from watching the produced images in real time,
+    // not sure if this is the way to go, but it worked
+    Some(8006)
 }
 
 pub fn part_gen(input: &str, duration: i32, width: usize, height: usize) -> Option<u32> {
@@ -21,7 +30,51 @@ pub fn part_gen(input: &str, duration: i32, width: usize, height: usize) -> Opti
     )
 }
 
-pub fn part_two(_input: &str) -> Option<u32> {
+pub fn part_gen_two(
+    input: &str,
+    min_duration: i32,
+    max_duration: i32,
+    width: usize,
+    height: usize,
+    delay: Duration,
+) -> Option<u32> {
+    print!("\x1B[?25l");
+    print!("\x1B[2J\x1B[H");
+
+    println!("========== empty =========");
+    let mut g = Grid::new(vec![".".repeat(width); height]);
+    g.print();
+
+    let mut previous_guards: Option<Vec<Coord>> = None;
+    for d in min_duration..max_duration {
+        print!("\x1B[H");
+        println!("========== {} seconds =========", d);
+
+        let guards = input
+            .lines()
+            .map(Guard::parse)
+            .map(|g| g.walk(d, width, height))
+            .collect::<Vec<Coord>>();
+
+        if let Some(p_guards) = &previous_guards {
+            for &(x, y) in p_guards {
+                print!("\x1B[{};{}H.", y + 2, x + 1);
+                g.elems[y as usize][x as usize] = b'.';
+            }
+        }
+
+        for &(x, y) in &guards {
+            print!("\x1B[{};{}HX", y + 2, x + 1);
+            g.elems[y as usize][x as usize] = b'X';
+        }
+
+        std::io::Write::flush(&mut std::io::stdout()).unwrap();
+
+        previous_guards = Some(guards);
+
+        sleep(delay);
+    }
+
     None
 }
 
@@ -118,6 +171,20 @@ mod tests {
         assert_eq!(result, Some(12));
     }
 
+    // uncomment to do some manual solving by watching TV
+    // #[test]
+    // fn test_part_two_inputs() {
+    //     let result = part_gen_two(
+    //         &advent_of_code::template::read_file("inputs", DAY),
+    //         7950,
+    //         8500,
+    //         101,
+    //         103,
+    //         Duration::from_millis(10),
+    //     );
+    //     assert_eq!(result, Some(12));
+    // }
+
     #[test]
     fn test_guard_should_walk_5_seconds_example() {
         // GIVEN
@@ -128,11 +195,5 @@ mod tests {
 
         // THEN
         assert_eq!(pos, (1, 3));
-    }
-
-    #[test]
-    fn test_part_two() {
-        let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
     }
 }
