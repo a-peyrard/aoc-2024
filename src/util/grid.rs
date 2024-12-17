@@ -1,7 +1,7 @@
 use std::io::BufRead;
 use strum_macros::EnumIter;
 
-#[derive(EnumIter, Eq, Hash, PartialEq, Copy, Clone)]
+#[derive(EnumIter, Eq, Hash, PartialEq, Copy, Clone, Debug)]
 pub enum Direction {
     North,
     NorthEast,
