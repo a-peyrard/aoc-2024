@@ -1,4 +1,5 @@
 use advent_of_code::util::grid::{Direction, Grid};
+use std::collections::HashSet;
 
 advent_of_code::solution!(15);
 
@@ -76,8 +77,216 @@ fn movement_to_direction(movement: u8) -> Direction {
     }
 }
 
-pub fn part_two(_input: &str) -> Option<u32> {
-    None
+pub fn part_two(input: &str) -> Option<u32> {
+    let mut parts = input.split("\n\n");
+    let compacted_grid = Grid::parse_input(parts.next()?);
+    let mut grid = Grid::new(vec![
+        ".".repeat(compacted_grid.width * 2);
+        compacted_grid.height
+    ]);
+    for y in 0..compacted_grid.height {
+        for x in 0..compacted_grid.width {
+            match compacted_grid.elems[y][x] {
+                b'#' => {
+                    grid.elems[y][x * 2] = b'#';
+                    grid.elems[y][x * 2] = b'#';
+                    grid.elems[y][x * 2 + 1] = b'#';
+                }
+                b'O' => {
+                    grid.elems[y][x * 2] = b'[';
+                    grid.elems[y][x * 2 + 1] = b']';
+                }
+                b'.' => {
+                    grid.elems[y][x * 2] = b'.';
+                    grid.elems[y][x * 2 + 1] = b'.';
+                }
+                b'@' => {
+                    grid.elems[y][x * 2] = b'@';
+                    grid.elems[y][x * 2 + 1] = b'.';
+                }
+                _ => panic!(
+                    "character {} not expected...",
+                    compacted_grid.elems[y][x] as char
+                ),
+            }
+        }
+    }
+
+    let moves: Vec<Direction> = parts
+        .next()?
+        .lines()
+        .flat_map(|l| l.as_bytes().iter().copied())
+        .map(movement_to_direction)
+        .collect();
+
+    println!("Initial");
+    grid.print();
+
+    let mut cur = grid.find(b'@').next()?;
+    for direction in moves {
+        grid.set(cur, b'.');
+        cur = match direction {
+            Direction::West => horizontal_move(direction, b']', b'[', cur, &mut grid),
+            Direction::East => horizontal_move(direction, b'[', b']', cur, &mut grid),
+            Direction::North | Direction::South => vertical_move(direction, cur, &mut grid),
+            _ => panic!("direction {:?} not expected", direction),
+        };
+        grid.set(cur, b'@');
+
+        println!("\nMove {:?}", direction);
+        grid.print();
+    }
+
+    Some(
+        grid.find(b'[') //
+            .map(|(x, y)| x as u32 + 100 * y as u32)
+            .sum(),
+    )
+}
+
+fn horizontal_move(
+    direction: Direction,
+    box_start: u8,
+    box_end: u8,
+    pos: (usize, usize),
+    grid: &mut Grid,
+) -> (usize, usize) {
+    let incr: i32 = if direction == Direction::West { 1 } else { -1 };
+    match can_move_horizontal(direction, box_start, pos, grid) {
+        None => pos,
+        Some(((sx, sy), number_of_boxes)) => {
+            for idx in 0..number_of_boxes {
+                grid.set(
+                    ((sx as i32 + (idx as i32 * 2 * incr)) as usize, sy),
+                    box_end,
+                );
+                grid.set(
+                    ((sx as i32 + (idx as i32 * 2 + 1) * incr) as usize, sy),
+                    box_start,
+                );
+            }
+            grid.set(
+                ((sx as i32 + number_of_boxes as i32 * 2 * incr) as usize, sy),
+                b'@',
+            );
+            ((sx as i32 + number_of_boxes as i32 * 2 * incr) as usize, sy)
+        }
+    }
+}
+
+fn can_move_horizontal(
+    direction: Direction,
+    box_start: u8,
+    pos: (usize, usize),
+    grid: &Grid,
+) -> Option<(Coord, u32)> {
+    let incr: i32 = if direction == Direction::West { -1 } else { 1 };
+    let next = grid.get_coords2(direction, pos);
+    match next {
+        None => None,
+        Some(next_pos) => {
+            let val = grid.get(next_pos);
+            match val {
+                b'#' => None,
+                b'.' => Some((next_pos, 0)),
+                c if c == box_start => {
+                    can_move_horizontal(
+                        direction,
+                        c,
+                        ((next_pos.0 as i32 + incr) as usize, next_pos.1),
+                        grid,
+                    ) //
+                    .map(|(c, n)| (c, n + 1))
+                }
+                _ => panic!("😱 should not have any other possibility..."),
+            }
+        }
+    }
+}
+
+fn vertical_move(direction: Direction, pos: (usize, usize), grid: &mut Grid) -> (usize, usize) {
+    let next = grid.get_coords2(direction, pos).unwrap();
+    let val = grid.get(next);
+    match val {
+        b'#' => pos,
+        b'.' => next,
+        b'[' => {
+            let area = find_pushable_area(
+                direction,
+                &mut vec![HashSet::from_iter(vec![next, (next.0 + 1, next.1)])],
+                grid,
+            );
+            if area.is_none() {
+                return pos;
+            }
+            // move the area up/down
+            for row in area.unwrap().into_iter().rev() {
+                for cell in row {
+                    let tmp = grid.get(cell);
+                    grid.set(cell, b'.');
+                    grid.set(grid.get_coords2(direction, cell).unwrap(), tmp);
+                }
+            }
+
+            next
+        }
+        _ /* b']' */ => {
+            let area = find_pushable_area(
+                direction,
+                &mut vec![HashSet::from_iter(vec![next, (next.0 - 1, next.1)])],
+                grid,
+            );
+            if area.is_none() {
+                return pos;
+            }
+            // move the area up/down
+            for row in area.unwrap().into_iter().rev() {
+                for cell in row {
+                    let tmp = grid.get(cell);
+                    grid.set(cell, b'.');
+                    grid.set(grid.get_coords2(direction, cell).unwrap(), tmp);
+                }
+            }
+
+            next
+        }
+    }
+}
+
+fn find_pushable_area(
+    direction: Direction,
+    area: &mut Vec<HashSet<(usize, usize)>>,
+    grid: &Grid,
+) -> Option<Vec<HashSet<(usize, usize)>>> {
+    let row = area.last().unwrap();
+    let mut new_row = HashSet::<Coord>::new();
+    let mut all_available = true;
+    for &cell in row {
+        let next = grid.get_coords2(direction, cell).unwrap();
+        let val = grid.get(next);
+        match val {
+            b'#' => return None,
+            b'[' => {
+                all_available = false;
+                new_row.insert(next);
+                new_row.insert((next.0 + 1, next.1));
+            },
+            b']' => {
+                all_available = false;
+                new_row.insert(next);
+                new_row.insert((next.0 - 1, next.1));
+            },
+            _ /* b'.' */ => {
+                new_row.insert(next);
+            },
+        }
+    }
+    if all_available {
+        return Some(area.clone());
+    }
+
+    area.push(new_row);
+    find_pushable_area(direction, area, grid)
 }
 
 #[cfg(test)]
@@ -101,10 +310,50 @@ mod tests {
     }
 
     #[test]
-    fn test_part_two() {
+    fn test_part_two_example_2() {
         let result = part_two(&advent_of_code::template::read_file_part(
-            "examples", DAY, 1,
+            "examples", DAY, 2,
         ));
-        assert_eq!(result, None);
+        assert_eq!(result, Some(9021));
+    }
+
+    #[test]
+    fn test_part_two_example_right() {
+        let result = part_two(
+            r#"#######
+#...#.#
+#.....#
+#.@OO.#
+#..O..#
+#.....#
+#######
+
+>>>>>>>>"#,
+        );
+        assert_eq!(result, Some(9021));
+    }
+
+    #[test]
+    fn test_part_two_example_left() {
+        let result = part_two(
+            r#"#######
+#...#.#
+#.....#
+#..O@.#
+#..O..#
+#.....#
+#######
+
+<<<<"#,
+        );
+        assert_eq!(result, Some(9021));
+    }
+
+    #[test]
+    fn test_part_two_example_3() {
+        let result = part_two(&advent_of_code::template::read_file_part(
+            "examples", DAY, 3,
+        ));
+        assert_eq!(result, Some(618));
     }
 }

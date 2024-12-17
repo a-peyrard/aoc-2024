@@ -75,6 +75,14 @@ impl Grid {
         }
     }
 
+    pub fn get_coords2(
+        &self,
+        direction: Direction,
+        (x, y): (usize, usize),
+    ) -> Option<(usize, usize)> {
+        self.get_coords(direction, x, y)
+    }
+
     pub fn get_coords(&self, direction: Direction, x: usize, y: usize) -> Option<(usize, usize)> {
         match direction {
             Direction::North => {
@@ -143,6 +151,14 @@ impl Grid {
             y: 0,
             element,
         }
+    }
+
+    pub fn get(&self, (x, y): (usize, usize)) -> u8 {
+        self.elems[y][x]
+    }
+
+    pub fn set(&mut self, (x, y): (usize, usize), value: u8) {
+        self.elems[y][x] = value;
     }
 
     pub fn print(&self) {
