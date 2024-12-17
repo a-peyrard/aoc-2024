@@ -1,9 +1,14 @@
 use advent_of_code::util::grid::{Direction, Grid};
 use std::collections::HashSet;
+use std::io::Write;
+use std::thread::sleep;
+use std::time::Duration;
 
 advent_of_code::solution!(15);
 
 type Coord = (usize, usize);
+
+const ANIMATE: bool = false;
 
 pub fn part_one(input: &str) -> Option<u32> {
     let mut parts = input.split("\n\n");
@@ -119,10 +124,15 @@ pub fn part_two(input: &str) -> Option<u32> {
         .map(movement_to_direction)
         .collect();
 
-    println!("Initial");
-    grid.print();
+    if ANIMATE {
+        print!("\x1B[?25l");
+        print!("\x1b[2J\x1b[H");
+        println!("Initial");
+        grid.print();
+    }
 
     let mut cur = grid.find(b'@').next()?;
+    let mut num_moves = 0;
     for direction in moves {
         grid.set(cur, b'.');
         cur = match direction {
@@ -133,8 +143,20 @@ pub fn part_two(input: &str) -> Option<u32> {
         };
         grid.set(cur, b'@');
 
-        println!("\nMove {:?}", direction);
-        grid.print();
+        if ANIMATE {
+            num_moves += 1;
+            print!("\x1b[2J\x1b[H");
+            println!("{}: Move {:?}", num_moves, direction);
+            grid.print();
+
+            std::io::stdout().flush().unwrap();
+
+            sleep(Duration::from_millis(100));
+        }
+    }
+
+    if ANIMATE {
+        print!("\x1B[?25h");
     }
 
     Some(
@@ -276,9 +298,7 @@ fn find_pushable_area(
                 new_row.insert(next);
                 new_row.insert((next.0 - 1, next.1));
             },
-            _ /* b'.' */ => {
-                new_row.insert(next);
-            },
+            _ /* b'.' */ => {},
         }
     }
     if all_available {
@@ -330,7 +350,7 @@ mod tests {
 
 >>>>>>>>"#,
         );
-        assert_eq!(result, Some(9021));
+        assert_eq!(result, Some(1024));
     }
 
     #[test]
@@ -346,7 +366,50 @@ mod tests {
 
 <<<<"#,
         );
-        assert_eq!(result, Some(9021));
+        assert_eq!(result, Some(708));
+    }
+
+    #[test]
+    fn test_should_work_special_case_1() {
+        // GIVEN
+        let mut grid = Grid::parse_input(
+            r#"####################
+##[]..[]......[][]##
+##[]...........[].##
+##...........@[][]##
+##..........[].[].##
+##..##[]..[].[]...##
+##...[]...[]..[]..##
+##.....[]..[].[][]##
+##........[]......##
+####################"#,
+        );
+        let original = (13, 3);
+
+        // WHEN
+        let new_pos = vertical_move(Direction::South, original, &mut grid);
+
+        // THEN
+        assert_eq!(new_pos, (13, 4));
+
+        grid.set(original, b'.');
+        grid.set(new_pos, b'@');
+        assert_eq!(
+            grid.elems,
+            Grid::parse_input(
+                r#"####################
+##[]..[]......[][]##
+##[]...........[].##
+##............[][]##
+##...........@.[].##
+##..##[]..[][]....##
+##...[]...[].[]...##
+##.....[]..[].[][]##
+##........[]..[]..##
+####################"#,
+            )
+            .elems
+        )
     }
 
     #[test]
