@@ -1,7 +1,7 @@
 use std::io::BufRead;
 use strum_macros::EnumIter;
 
-#[derive(EnumIter, Eq, Hash, PartialEq, Copy, Clone, Debug)]
+#[derive(EnumIter, Eq, Hash, PartialEq, Copy, Clone, Debug, Ord, PartialOrd)]
 pub enum Direction {
     North,
     NorthEast,
@@ -24,6 +24,19 @@ impl Direction {
             Direction::SouthWest => Direction::NorthWest,
             Direction::West => Direction::North,
             Direction::NorthWest => Direction::NorthEast,
+        }
+    }
+
+    pub fn rotate_left(&self) -> Direction {
+        match self {
+            Direction::North => Direction::West,
+            Direction::NorthEast => Direction::NorthWest,
+            Direction::East => Direction::North,
+            Direction::SouthEast => Direction::NorthEast,
+            Direction::South => Direction::East,
+            Direction::SouthWest => Direction::SouthEast,
+            Direction::West => Direction::South,
+            Direction::NorthWest => Direction::SouthWest,
         }
     }
 }
