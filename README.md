@@ -36,24 +36,25 @@ _Template for the repository: http://github.com/fspoettel/advent-of-code-rust_
 
 | Day | Part 1 | Part 2 |
 | :---: | :---: | :---:  |
-| [Day 1](./src/bin/01.rs) | `91.8µs` | `109.1µs` |
-| [Day 2](./src/bin/02.rs) | `119.4µs` | `222.9µs` |
-| [Day 3](./src/bin/03.rs) | `241.5µs` | `297.5µs` |
-| [Day 4](./src/bin/04.rs) | `881.3µs` | `104.9µs` |
-| [Day 5](./src/bin/05.rs) | `766.2µs` | `1.9ms` |
-| [Day 6](./src/bin/06.rs) | `318.7µs` | `1.1s` |
-| [Day 7](./src/bin/07.rs) | `1.4ms` | `27.2ms` |
-| [Day 8](./src/bin/08.rs) | `25.4µs` | `65.3µs` |
-| [Day 9](./src/bin/09.rs) | `169.1µs` | `35.9ms` |
-| [Day 10](./src/bin/10.rs) | `399.1µs` | `334.5µs` |
-| [Day 11](./src/bin/11.rs) | `257.1µs` | `14.1ms` |
-| [Day 12](./src/bin/12.rs) | `660.9µs` | `1.3ms` |
-| [Day 13](./src/bin/13.rs) | `76.8ms` | `74.7ms` |
-| [Day 14](./src/bin/14.rs) | `56.4µs` | `15.0ns` |
-| [Day 15](./src/bin/15.rs) | `365.4µs` | `997.8µs` |
+| [Day 1](./src/bin/01.rs) | `93.8µs` | `109.0µs` |
+| [Day 2](./src/bin/02.rs) | `119.9µs` | `220.6µs` |
+| [Day 3](./src/bin/03.rs) | `242.2µs` | `291.7µs` |
+| [Day 4](./src/bin/04.rs) | `894.0µs` | `111.1µs` |
+| [Day 5](./src/bin/05.rs) | `755.2µs` | `1.9ms` |
+| [Day 6](./src/bin/06.rs) | `320.4µs` | `1.1s` |
+| [Day 7](./src/bin/07.rs) | `1.5ms` | `27.6ms` |
+| [Day 8](./src/bin/08.rs) | `24.9µs` | `68.4µs` |
+| [Day 9](./src/bin/09.rs) | `175.4µs` | `35.9ms` |
+| [Day 10](./src/bin/10.rs) | `402.3µs` | `339.4µs` |
+| [Day 11](./src/bin/11.rs) | `251.7µs` | `13.5ms` |
+| [Day 12](./src/bin/12.rs) | `655.0µs` | `1.2ms` |
+| [Day 13](./src/bin/13.rs) | `79.2ms` | `73.1ms` |
+| [Day 14](./src/bin/14.rs) | `48.5µs` | `16.0ns` |
+| [Day 15](./src/bin/15.rs) | `345.5µs` | `949.8µs` |
 | [Day 16](./src/bin/16.rs) | `1.5s` | `1.5s` |
+| [Day 17](./src/bin/17.rs) | `1.5µs` | `-` |
 
-**Total: 4339.78ms**
+**Total: 4340.32ms**
 <!--- benchmarking table --->
 
 ---
