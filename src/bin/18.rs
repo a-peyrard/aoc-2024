@@ -57,8 +57,37 @@ fn find_shortest_path(grid: &Grid) -> u32 {
     0
 }
 
-pub fn part_two(_input: &str) -> Option<u32> {
-    None
+pub fn part_two(input: &str) -> Option<String> {
+    part_two_gen(input, 71)
+}
+
+pub fn part_two_gen(input: &str, grid_size: usize) -> Option<String> {
+    let bytes = input
+        .lines()
+        .filter_map(|line| line.split_once(','))
+        .map(|(a, b)| (a.parse::<usize>().unwrap(), b.parse::<usize>().unwrap()))
+        .collect::<Vec<Coord>>();
+
+    let mut high = bytes.len() - 1;
+    let mut low = 0;
+    while low <= high {
+        let mid = low + ((high - low) / 2);
+
+        let mut grid = Grid::new(vec![".".repeat(grid_size); grid_size]);
+        bytes.iter().take(mid).for_each(|&pos| grid.set(pos, b'#'));
+        match find_shortest_path(&grid) {
+            0 => high = mid - 1,
+            _ => low = mid + 1,
+        }
+    }
+
+    let first = bytes[low - 1];
+    let mut res = String::new();
+    res.push_str(&first.0.to_string());
+    res.push(',');
+    res.push_str(&first.1.to_string());
+
+    Some(res)
 }
 
 #[cfg(test)]
@@ -83,7 +112,7 @@ mod tests {
 
     #[test]
     fn test_part_two() {
-        let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        let result = part_two_gen(&advent_of_code::template::read_file("examples", DAY), 7);
+        assert_eq!(result, Some(String::from("6,1")));
     }
 }
