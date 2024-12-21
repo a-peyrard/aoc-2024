@@ -1,8 +1,35 @@
 use std::collections::HashMap;
+use std::str::Lines;
 
 advent_of_code::solution!(19);
 
 pub fn part_one(input: &str) -> Option<u32> {
+    let (all_patterns, designs) = parse(input);
+
+    let mut possibles = 0;
+    let mut memo = HashMap::<String, bool>::new();
+    for design in designs {
+        if is_possible(design, &all_patterns, &mut memo) {
+            possibles += 1;
+        }
+    }
+
+    Some(possibles)
+}
+
+pub fn part_two(input: &str) -> Option<u64> {
+    let (all_patterns, designs) = parse(input);
+
+    let mut count = 0;
+    let mut memo = HashMap::<String, u64>::new();
+    for design in designs {
+        count += arrangements(design, &all_patterns, &mut memo);
+    }
+
+    Some(count)
+}
+
+fn parse(input: &str) -> (Patterns, Lines<'_>) {
     let (b1, b2) = input.split_once("\n\n").unwrap();
 
     let mut all_patterns = Patterns::new();
@@ -12,15 +39,9 @@ pub fn part_one(input: &str) -> Option<u32> {
         .split(", ")
         .for_each(|token| all_patterns.insert(token));
 
-    let mut possibles = 0;
-    let mut memo = HashMap::<String, bool>::new();
-    for design in b2.lines() {
-        if is_possible(design, &all_patterns, &mut memo) {
-            possibles += 1;
-        }
-    }
+    let lines = b2.lines();
 
-    Some(possibles)
+    (all_patterns, lines)
 }
 
 #[derive(Default, Debug)]
@@ -77,8 +98,31 @@ fn is_possible(design: &str, all_patterns: &Patterns, memo: &mut HashMap<String,
     false
 }
 
-pub fn part_two(_input: &str) -> Option<u32> {
-    None
+fn arrangements(design: &str, all_patterns: &Patterns, memo: &mut HashMap<String, u64>) -> u64 {
+    if design.is_empty() {
+        return 1;
+    }
+    if let Some(&cached) = memo.get(design) {
+        return cached;
+    }
+
+    let mut count = 0;
+    let mut patterns = all_patterns;
+    for (i, cur) in design.chars().enumerate() {
+        if let Some(cur_patterns) = patterns.get(cur) {
+            patterns = cur_patterns;
+        } else {
+            break;
+        }
+
+        #[allow(clippy::collapsible_if)]
+        if patterns.is_final {
+            count += arrangements(&design[i + 1..], all_patterns, memo);
+        }
+    }
+
+    memo.insert(design.to_owned(), count);
+    count
 }
 
 #[cfg(test)]
@@ -98,8 +142,14 @@ mod tests {
     // }
 
     #[test]
-    fn test_part_two() {
+    fn test_part_two_example() {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        assert_eq!(result, Some(16));
     }
+
+    // #[test]
+    // fn test_part_two_input() {
+    //     let result = part_two(&advent_of_code::template::read_file("inputs", DAY));
+    //     assert_eq!(result, Some(16));
+    // }
 }
