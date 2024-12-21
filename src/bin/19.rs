@@ -13,18 +13,12 @@ pub fn part_one(input: &str) -> Option<u32> {
         .for_each(|token| all_patterns.insert(token));
 
     let mut possibles = 0;
+    let mut memo = HashMap::<String, bool>::new();
     for design in b2.lines() {
-        if is_possible(design, &all_patterns) {
-            println!("design <{}> is possible!", design);
+        if is_possible(design, &all_patterns, &mut memo) {
             possibles += 1;
-        } else {
-            println!("design <{}> is NOT possible!", design);
         }
     }
-
-    // b2.lines()
-    // .filter(|design| is_possible(design.as_bytes(), &patterns))
-    // .count() as u32,
 
     Some(possibles)
 }
@@ -53,9 +47,12 @@ impl Patterns {
     }
 }
 
-fn is_possible(design: &str, all_patterns: &Patterns) -> bool {
+fn is_possible(design: &str, all_patterns: &Patterns, memo: &mut HashMap<String, bool>) -> bool {
     if design.is_empty() {
         return true;
+    }
+    if let Some(&cached) = memo.get(design) {
+        return cached;
     }
 
     let mut patterns = all_patterns;
@@ -63,17 +60,20 @@ fn is_possible(design: &str, all_patterns: &Patterns) -> bool {
         if let Some(cur_patterns) = patterns.get(cur) {
             patterns = cur_patterns;
         } else {
+            memo.insert(design[i..].to_owned(), false);
             return false;
         }
 
         #[allow(clippy::collapsible_if)]
         if patterns.is_final {
-            if is_possible(&design[i + 1..], all_patterns) {
+            if is_possible(&design[i + 1..], all_patterns, memo) {
+                memo.insert(design[i + 1..].to_owned(), true);
                 return true;
             }
         }
     }
 
+    memo.insert(design.to_owned(), false);
     false
 }
 
@@ -94,7 +94,7 @@ mod tests {
     // #[test]
     // fn test_part_one_input() {
     //     let result = part_one(&advent_of_code::template::read_file("inputs", DAY));
-    //     assert_eq!(result, Some(6));
+    //     assert_eq!(result, Some(290));
     // }
 
     #[test]
