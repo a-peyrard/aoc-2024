@@ -6,25 +6,21 @@ advent_of_code::solution!(19);
 pub fn part_one(input: &str) -> Option<u32> {
     let (all_patterns, designs) = parse(input);
 
-    let mut possibles = 0;
     let mut memo = HashMap::<String, bool>::new();
-    for design in designs {
-        if is_possible(design, &all_patterns, &mut memo) {
-            possibles += 1;
-        }
-    }
+    let count = designs
+        .filter(|design| is_possible(design, &all_patterns, &mut memo))
+        .count() as u32;
 
-    Some(possibles)
+    Some(count)
 }
 
 pub fn part_two(input: &str) -> Option<u64> {
     let (all_patterns, designs) = parse(input);
 
-    let mut count = 0;
     let mut memo = HashMap::<String, u64>::new();
-    for design in designs {
-        count += arrangements(design, &all_patterns, &mut memo);
-    }
+    let count = designs
+        .map(|design| arrangements(design, &all_patterns, &mut memo))
+        .sum();
 
     Some(count)
 }
