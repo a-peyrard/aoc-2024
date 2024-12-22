@@ -13,33 +13,70 @@ const DIRECTIONS: [Direction; 4] = [
 ];
 
 pub fn part_one(input: &str) -> Option<u32> {
-    part_one_gen(input, 100)
+    part_gen(input, 2, 100)
 }
 
-fn part_one_gen(input: &str, save: usize) -> Option<u32> {
+pub fn part_two(input: &str) -> Option<u32> {
+    part_gen(input, 20, 100)
+}
+
+fn part_gen(input: &str, cheat_max_size: usize, save: u32) -> Option<u32> {
     let mut grid = Grid::parse_input(input);
     let start = grid.find(b'S').next().unwrap();
     let end = grid.find(b'E').next().unwrap();
     let path = build_path(&grid, start, end);
 
-    let mut shortcuts: Vec<u32> = vec![0; path.len()];
-    find_shortcuts(&mut grid, &path, &mut shortcuts);
+    let shortcuts = find_shortcuts(&mut grid, &path, cheat_max_size, save);
 
-    Some(shortcuts.iter().skip(save).sum())
+    Some(shortcuts)
 }
 
-fn find_shortcuts(grid: &mut Grid, path: &HashMap<Coord, u32>, shortcuts: &mut [u32]) {
+fn find_shortcuts(
+    grid: &mut Grid,
+    path: &HashMap<Coord, u32>,
+    cheat_max_size: usize,
+    save_at_least: u32,
+) -> u32 {
+    let mut shortcuts = 0;
     for (&cur, &distance) in path {
-        for direction in DIRECTIONS {
-            if let Some(next) = grid.get_coords2(direction, cur) {
-                let val_next = grid.get(next);
-                if val_next == b'#' {
-                    if let Some(next_next) = grid.get_coords2(direction, next) {
-                        if let Some(&distance_next_next) = path.get(&next_next) {
-                            if distance_next_next > distance + 2 {
-                                // this is a shortcut and we set a $ as we don't want to use it again
-                                shortcuts[(distance_next_next - (distance + 2)) as usize] += 1;
-                                grid.set(next, b'$');
+        shortcuts += find_shortcuts_from(grid, cur, distance, path, cheat_max_size, save_at_least);
+    }
+
+    shortcuts
+}
+
+fn find_shortcuts_from(
+    grid: &Grid,
+    cur: Coord,
+    distance_for_start: u32,
+    path: &HashMap<Coord, u32>,
+    cheat_max_size: usize,
+    save_at_least: u32,
+) -> u32 {
+    if cheat_max_size == 0 {
+        return 0;
+    }
+
+    let mut shortcuts = 0;
+    for direction in DIRECTIONS {
+        if let Some(next) = grid.get_coords2(direction, cur) {
+            match grid.get(next) {
+                b'#' => {
+                    shortcuts += find_shortcuts_from(
+                        grid,
+                        next,
+                        distance_for_start,
+                        path,
+                        cheat_max_size - 1,
+                        save_at_least,
+                    )
+                }
+                _ => {
+                    if let Some(&distance_next) = path.get(&next) {
+                        if distance_next > distance_for_start + 2 {
+                            let saved = distance_next - (distance_for_start + 2);
+                            if saved >= save_at_least {
+                                shortcuts += 1;
                             }
                         }
                     }
@@ -47,6 +84,8 @@ fn find_shortcuts(grid: &mut Grid, path: &HashMap<Coord, u32>, shortcuts: &mut [
             }
         }
     }
+
+    shortcuts
 }
 
 fn build_path(grid: &Grid, start: Coord, end: Coord) -> HashMap<Coord, u32> {
@@ -80,18 +119,15 @@ fn build_path_rec(
     }
 }
 
-pub fn part_two(_input: &str) -> Option<u32> {
-    None
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
     fn test_part_one_gen_example_more_than_2() {
-        let result = part_one_gen(
+        let result = part_gen(
             &advent_of_code::template::read_file("examples", DAY), //
+            2,
             2,
         );
         assert_eq!(result, Some(44));
@@ -99,8 +135,9 @@ mod tests {
 
     #[test]
     fn test_part_one_gen_example_more_than_20() {
-        let result = part_one_gen(
+        let result = part_gen(
             &advent_of_code::template::read_file("examples", DAY), //
+            2,
             20,
         );
         assert_eq!(result, Some(5));
@@ -108,16 +145,51 @@ mod tests {
 
     #[test]
     fn test_part_one_gen_example_more_than_100() {
-        let result = part_one_gen(
+        let result = part_gen(
             &advent_of_code::template::read_file("examples", DAY), //
+            2,
             100,
         );
         assert_eq!(result, Some(0));
     }
 
     #[test]
-    fn test_part_two() {
-        let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+    fn test_part_two_gen_example_more_than_50() {
+        let result = part_gen(
+            &advent_of_code::template::read_file("examples", DAY), //
+            20,
+            50,
+        );
+        assert_eq!(result, Some(285));
+    }
+
+    #[test]
+    fn test_part_two_gen_example_more_than_60() {
+        let result = part_gen(
+            &advent_of_code::template::read_file("examples", DAY), //
+            20,
+            60,
+        );
+        assert_eq!(result, Some(129));
+    }
+
+    #[test]
+    fn test_part_two_gen_example_more_than_70() {
+        let result = part_gen(
+            &advent_of_code::template::read_file("examples", DAY), //
+            20,
+            70,
+        );
+        assert_eq!(result, Some(41));
+    }
+
+    #[test]
+    fn test_part_two_gen_example_more_than_100() {
+        let result = part_gen(
+            &advent_of_code::template::read_file("examples", DAY), //
+            20,
+            100,
+        );
+        assert_eq!(result, Some(0));
     }
 }
