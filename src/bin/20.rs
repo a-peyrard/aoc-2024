@@ -1,4 +1,5 @@
 use advent_of_code::util::grid::{Direction, Grid};
+use itertools::Itertools;
 use std::collections::HashMap;
 
 advent_of_code::solution!(20);
@@ -20,72 +21,33 @@ pub fn part_two(input: &str) -> Option<u32> {
     part_gen(input, 20, 100)
 }
 
-fn part_gen(input: &str, cheat_max_size: usize, save: u32) -> Option<u32> {
-    let mut grid = Grid::parse_input(input);
+fn part_gen(input: &str, cheat_max_size: u32, save: u32) -> Option<u32> {
+    let grid = Grid::parse_input(input);
     let start = grid.find(b'S').next().unwrap();
     let end = grid.find(b'E').next().unwrap();
     let path = build_path(&grid, start, end);
 
-    let shortcuts = find_shortcuts(&mut grid, &path, cheat_max_size, save);
+    let shortcuts = find_shortcuts(&path, cheat_max_size, save);
 
     Some(shortcuts)
 }
 
-fn find_shortcuts(
-    grid: &mut Grid,
-    path: &HashMap<Coord, u32>,
-    cheat_max_size: usize,
-    save_at_least: u32,
-) -> u32 {
-    let mut shortcuts = 0;
-    for (&cur, &distance) in path {
-        shortcuts += find_shortcuts_from(grid, cur, distance, path, cheat_max_size, save_at_least);
-    }
-
-    shortcuts
-}
-
-fn find_shortcuts_from(
-    grid: &Grid,
-    cur: Coord,
-    distance_for_start: u32,
-    path: &HashMap<Coord, u32>,
-    cheat_max_size: usize,
-    save_at_least: u32,
-) -> u32 {
-    if cheat_max_size == 0 {
-        return 0;
-    }
-
-    let mut shortcuts = 0;
-    for direction in DIRECTIONS {
-        if let Some(next) = grid.get_coords2(direction, cur) {
-            match grid.get(next) {
-                b'#' => {
-                    shortcuts += find_shortcuts_from(
-                        grid,
-                        next,
-                        distance_for_start,
-                        path,
-                        cheat_max_size - 1,
-                        save_at_least,
-                    )
-                }
-                _ => {
-                    if let Some(&distance_next) = path.get(&next) {
-                        if distance_next > distance_for_start + 2 {
-                            let saved = distance_next - (distance_for_start + 2);
-                            if saved >= save_at_least {
-                                shortcuts += 1;
-                            }
-                        }
-                    }
-                }
-            }
+fn find_shortcuts(path: &HashMap<Coord, u32>, cheat_max_size: u32, save_at_least: u32) -> u32 {
+    let mut res = 0;
+    for pair in path.iter().permutations(2) {
+        let (a, da) = pair[0];
+        let (b, db) = pair[1];
+        let d = manhattan_distance(*a, *b) as u32;
+        if db > da && d <= cheat_max_size && db - da - d >= save_at_least {
+            res += 1;
         }
     }
 
-    shortcuts
+    res
+}
+
+fn manhattan_distance((xa, ya): Coord, (xb, yb): Coord) -> usize {
+    (xa.max(xb) - xa.min(xb)) + (ya.max(yb) - ya.min(yb))
 }
 
 fn build_path(grid: &Grid, start: Coord, end: Coord) -> HashMap<Coord, u32> {
