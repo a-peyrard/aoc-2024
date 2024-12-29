@@ -34,6 +34,7 @@ _Template for the repository: http://github.com/fspoettel/advent-of-code-rust_
 | [Day 19](https://adventofcode.com/2024/day/19) | ⭐ | ⭐ |
 | [Day 20](https://adventofcode.com/2024/day/20) | ⭐ | ⭐ |
 | [Day 22](https://adventofcode.com/2024/day/22) | ⭐ | ⭐ |
+| [Day 23](https://adventofcode.com/2024/day/23) | ⭐ | ⭐ |
 <!--- advent_readme_stars table --->
 
 <!--- benchmarking table --->
